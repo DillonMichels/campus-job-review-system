@@ -101,6 +101,7 @@ class ReviewForm(FlaskForm):
             (10, "10"),
         ],
     )
+    is_anonymous = BooleanField('Submit anonymously')
     submit = SubmitField("Submit your review")
 
 

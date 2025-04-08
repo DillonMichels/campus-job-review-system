@@ -124,7 +124,7 @@
                         </div>
                         <br><br>
                         
-                        <!-- Recommendation Slider with Enhanced Labels -->
+                        <!-- Recommendation Slider -->
                         <label for="recommendation" class="form-control-label">Recommendation Level (1 to 10)</label><br>
                         <div class="slider-container">
                             <span class="slider-label">Do Not Recommend</span>
@@ -147,7 +147,13 @@
                         {{ form.review(class="form-control form-control-lg") }}
                         {% endif %}
                         <br>
-                        
+
+                        <!-- Anonymous Checkbox -->
+                        <div class="form-check mb-3">
+                            {{ form.is_anonymous(class="form-check-input", id="anonCheck") }}
+                            <label class="form-check-label" for="anonCheck">Submit Anonymously</label>
+                        </div>
+
                         <!-- Submit Button -->
                         <div class="form-group">
                             {{ form.submit(class="btn btn-outline-info") }}
