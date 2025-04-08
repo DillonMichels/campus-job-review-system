@@ -4,7 +4,7 @@ Thank you for taking the time to contribute to our [project](https://github.com/
 
 Please start by reviewing our [Code of Conduct](https://github.com/SEFall24-Team61/campus-job-review-system/blob/main/CODE_OF_CONDUCT.md) to help keep our community respectful and inclusive.
 
----
+----
 
 ## Table of Contents
 1. [How Can I Contribute?](#how-can-i-contribute)

@@ -328,6 +328,7 @@ def resume_parser_we():
 def new_review():
     form = ReviewForm()
     if form.validate_on_submit():
+        print("Checkbox value:", form.is_anonymous.data) #DBG
         review = Reviews(
             job_title=form.job_title.data,
             job_description=form.job_description.data,
@@ -338,12 +339,14 @@ def new_review():
             review=form.review.data,
             rating=form.rating.data,
             recommendation=form.recommendation.data,
+            is_anonymous=form.is_anonymous.data,
             author=current_user,
         )
         db.session.add(review)
         db.session.commit()
         flash("Review submitted successfully!", "success")
         return redirect(url_for("view_reviews"))
+    
     return render_template(
         "create_review.html", title="New Review", form=form, legend="Add your Review"
     )

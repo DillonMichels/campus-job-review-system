@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function() {
         <td>{{ entry.review }}</td>
         <td>{{ entry.rating }}</td>
         <td>{{ entry.recommendation }}</td>
-        <td>{{ entry.author.username }}</td>
+        <td>{{ "Anonymous" if entry.is_anonymous else entry.author.username }}</td>
         <td>
           <form action="{{ url_for('upvote_review', review_id=entry.id) }}" method="POST" style="display:inline;">
               <button type="submit" class="btn btn-outline-success btn-sm">

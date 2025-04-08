@@ -22,6 +22,7 @@ class Reviews(db.Model):
     recommendation = db.Column(db.Integer, nullable=False)
     upvotes = db.Column(db.Integer, default=0)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    is_anonymous = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f"<Review {self.id} - {self.job_title}>"
