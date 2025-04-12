@@ -1034,3 +1034,75 @@ def profile():
 
     flash("Profile updated successfully!", "success")
     return redirect(url_for("profile"))
+
+def get_llm_match_percentage(resume_text: str, job_description: str) -> dict:
+    """
+    Calculates the match percentage between a resume and a job description using Ollama.
+
+    Args:
+        resume_text: The extracted text from the resume.
+        job_description: The job description.
+
+    Returns:
+        A dictionary containing the match percentage (0-100) and an explanation.
+    """
+    model_name = 'deepseek-r1:1.5b'  # Or your preferred Ollama model
+    prompt = f"""Analyze the following resume:\n\n{resume_text}\n\nand compare it to the following job description:\n\n{job_description}\n\nProvide a percentage match (0-100) indicating how well the resume aligns with the job requirements. Also, briefly explain the key reasons for this score."""
+
+    try:
+        response: ChatResponse = chat(model=model_name, messages=[{'role': 'user', 'content': prompt}])
+        llm_response = response.message.content
+        # Basic parsing of the LLM response to find percentage and explanation
+        percentage_start = llm_response.find('%') - 3
+        percentage_end = llm_response.find('%') + 1
+        percentage_str = llm_response[percentage_start:percentage_end].strip().replace('%', '')
+        try:
+            match_percentage = int(float(percentage_str))
+        except ValueError:
+            match_percentage = 0
+        explanation_start = llm_response.find('.') + 1 if '.' in llm_response else 0
+        explanation = llm_response[explanation_start:].strip()
+
+        return {'match_percentage': match_percentage, 'explanation': explanation}
+
+    except ollama.OllamaAPIError as e:
+        print(f"Ollama API Error: {e}")
+        return {'match_percentage': 0, 'explanation': f'Error communicating with Ollama: {e}'}
+    except Exception as e:
+        print(f"Error during LLM interaction: {e}")
+        return {'match_percentage': 0, 'explanation': f'An unexpected error occurred: {e}'}
+    
+def extract_text_from_pdf_memory(file_content):
+    """Extract text from PDF content in memory."""
+    text = ""
+    try:
+        pdf_reader = PyPDF2.PdfReader(BytesIO(file_content))
+        for page in pdf_reader.pages:
+            text += page.extract_text() or ""
+    except Exception as e:
+        print(f"Error reading PDF with PyPDF2: {e}")
+    return text.strip()
+
+@app.route('/match_resume/<int:posting_id>', methods=['POST'])
+@login_required
+def match_resume_to_job(posting_id):
+    user = current_user
+    if not user.resume_path:
+        return jsonify({'error': 'No resume found for the current user. Please upload a resume in your account settings.'}), 400
+
+    # Assuming you have a function to load the job posting details
+    posting = Recruiter_Postings.query.get_or_404(posting_id)
+
+    try:
+        with open(user.resume_path, 'r', encoding='utf-8') as f:
+            resume_text = f.read()
+    except Exception as e:
+        try:
+            with open(user.resume_path, 'rb') as f:
+                resume_text = extract_text_from_pdf_memory(f.read())
+        except Exception as pdf_e:
+            return jsonify({'error': f'Error reading resume file: {e} or {pdf_e}'}), 500
+
+    match_data = get_llm_match_percentage(resume_text, posting.jobDescription)
+
+    return jsonify(match_data)
