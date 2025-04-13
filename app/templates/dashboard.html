@@ -72,7 +72,7 @@
                     </form>
                 </td>
                 <td>
-                    <button class="btn btn-success btn-sm match-button" onclick="getMatch({{ posting.postingId }})">Check Match</button>
+                    <button class="btn btn-success btn-sm match-button" onclick="getMatch('{{ posting.postingId }}')">Check Match</button>
                     <div id="match-results-{{ posting.postingId }}" class="match-results">
                         <strong>Match:</strong> <span id="match-percentage-{{ posting.postingId }}"></span>%<br>
                         <strong>Reason:</strong> <span id="match-explanation-{{ posting.postingId }}"></span>

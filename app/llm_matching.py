@@ -1,8 +1,7 @@
-# In your llm_matching.py file:
-
 import ollama
 from ollama import chat
 from ollama import ChatResponse
+from ollama._types import ResponseError  # Import the specific error type
 
 def get_llm_match_percentage(resume_text: str, job_description: str) -> dict:
     """
@@ -34,9 +33,9 @@ def get_llm_match_percentage(resume_text: str, job_description: str) -> dict:
 
         return {'match_percentage': match_percentage, 'explanation': explanation}
 
-    except ollama.Error as e:  # Catch the general Ollama error
-        print(f"Ollama Error: {e}")
+    except ResponseError as e:  # Catch the specific ResponseError
+        print(f"Ollama Response Error: {e}")
         return {'match_percentage': 0, 'explanation': f'Error communicating with Ollama: {e}'}
     except Exception as e:
-        print(f"Error during LLM interaction: {e}")
-        return {'match_percentage': 0, 'explanation': f'An unexpected error occurred: {e}'}
+        print(f"An unexpected error occurred: {e}")
+        return {'match_percentage': 0, 'explanation': str(e)}
