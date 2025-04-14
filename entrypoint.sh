@@ -1,12 +1,13 @@
-#!/bin/sh
-# Start Ollama in the background
-ollama serve &
+#!/bin/bash
+echo "Starting Ollama..."
+ollama serve &> /proc/1/fd/1 &
 
-# Wait a bit to ensure Ollama is running
-sleep 2
+sleep 15
 
-# pull the model
-ollama run deepseek-r1:1.5b
+echo "Pulling deepseek-r1:1.5b model..."
+ollama pull deepseek-r1:1.5b
 
-# Start Flask app
-exec flask run --host=0.0.0.0
+sleep 10
+
+echo "Starting Flask application..."
+flask run -h 0.0.0.0 -p 5000

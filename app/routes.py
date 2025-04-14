@@ -3,7 +3,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from app.services.job_fetcher import fetch_job_listings
 from app import app, db, bcrypt
 from app.models import Meetings, Reviews, User, JobApplication, Recruiter_Postings, PostingApplications, JobExperience
-
+from app.llm_matching import get_llm_match_percentage 
 from app.forms import RegistrationForm, LoginForm, ReviewForm, JobApplicationForm, PostingForm
 from datetime import datetime
 import json
@@ -1034,3 +1034,38 @@ def profile():
 
     flash("Profile updated successfully!", "success")
     return redirect(url_for("profile"))
+    
+def extract_text_from_pdf_memory(file_content):
+    """Extract text from PDF content in memory."""
+    text = ""
+    try:
+        pdf_reader = PyPDF2.PdfReader(BytesIO(file_content))
+        for page in pdf_reader.pages:
+            text += page.extract_text() or ""
+    except Exception as e:
+        print(f"Error reading PDF with PyPDF2: {e}")
+    return text.strip()
+
+@app.route('/match_resume/<int:posting_id>', methods=['POST'])
+@login_required
+def match_resume_to_job(posting_id):
+    user = current_user
+    if not user.resume_path:
+        return jsonify({'error': 'No resume found for the current user. Please upload a resume in your account settings.'}), 400
+
+    # Assuming you have a function to load the job posting details
+    posting = Recruiter_Postings.query.get_or_404(posting_id)
+
+    try:
+        with open(user.resume_path, 'r', encoding='utf-8') as f:
+            resume_text = f.read()
+    except Exception as e:
+        try:
+            with open(user.resume_path, 'rb') as f:
+                resume_text = extract_text_from_pdf_memory(f.read())
+        except Exception as pdf_e:
+            return jsonify({'error': f'Error reading resume file: {e} or {pdf_e}'}), 500
+
+    match_data = get_llm_match_percentage(resume_text, posting.jobDescription)
+
+    return jsonify(match_data)
