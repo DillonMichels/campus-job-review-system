@@ -1,4 +1,5 @@
-from flask import render_template, request, send_from_directory, redirect, flash, url_for, abort, jsonify
+from flask import render_template, request, send_from_directory, redirect, flash, url_for, abort, jsonify, current_app
+from flask import session
 from flask_login import login_user, current_user, logout_user, login_required
 from app.services.job_fetcher import fetch_job_listings
 from app import app, db, bcrypt
@@ -7,24 +8,23 @@ from app.llm_matching import get_llm_match_percentage
 from app.forms import RegistrationForm, LoginForm, ReviewForm, JobApplicationForm, PostingForm
 from datetime import datetime
 import json
+import base64
+import os
+from io import BytesIO
+
+# Additional imports for 2FA
+import qrcode
+import pyotp
 
 import ollama
 from ollama import chat
 from ollama import ChatResponse
 
 from pdfquery import PDFQuery
-import base64
 import PyPDF2
-from io import BytesIO
-
-## additions made 2/22
-import os
 from werkzeug.utils import secure_filename
-from flask import Flask, flash, current_app
-# added on 2/24
-from flask import send_from_directory, current_app  # NEW
-from werkzeug.utils import secure_filename  # NEW
 
+# Duplicate import removed; current_app and send_from_directory already imported above
 
 def extract_text_from_pdf(pdf_path):
     """Extract text from a PDF file."""
@@ -33,7 +33,6 @@ def extract_text_from_pdf(pdf_path):
         for page in doc:
             text += page.get_text("text") + "\n"  # Extract text from each page
     return text if text.strip() else "No text found in the PDF."
-
 
 app.config["SECRET_KEY"] = "5791628bb0b13ce0c676dfde280ba245"
 
@@ -48,7 +47,7 @@ def home():
 # #####################################
 
 ## editing routes for tests to work Feb 25
-UPLOAD_FOLDER = os.getcwd()+'/app/resumes'  # Create this folder in your project
+UPLOAD_FOLDER = os.getcwd() + '/app/resumes'  # Create this folder in your project
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'txt'}  # Add other extensions as needed
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -56,8 +55,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route("/account", methods=['GET', 'POST'])
 @login_required
@@ -88,7 +86,6 @@ def account():
     resume_path = user.resume_path if user.is_authenticated else None
     return render_template("account.html", title="Account", resume_path=resume_path)
 
-
 @app.route('/resume/<path:path>')  # Serve the resume
 @login_required
 def serve_resume(path):
@@ -99,27 +96,20 @@ def serve_resume(path):
 # #####################################
 # #####################################
 
-#@app.route("/register", methods=["GET"])
-#def register():
-
 @app.route("/register", methods=["POST", "GET"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("home"))
     form = RegistrationForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
-            "utf-8"
-        )
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(
-            username=form.username.data, email=form.email.data, password=hashed_password, is_recruiter=form.signup_as_recruiter.data
+            username=form.username.data, email=form.email.data,
+            password=hashed_password, is_recruiter=form.signup_as_recruiter.data
         )
         db.session.add(user)
         db.session.commit()
-        flash(
-            "Account created successfully! Please log in with your credentials.",
-            "success",
-        )
+        flash("Account created successfully! Please log in with your credentials.", "success")
         return redirect(url_for("login"))
     return render_template("register.html", title="Register", form=form)
 
@@ -127,34 +117,132 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("home"))
+
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
+
         if user and bcrypt.check_password_hash(user.password, form.password.data):
+            if user.two_factor_enabled:
+                code = form.two_factor_code.data
+                if not code:
+                    flash("Two-factor authentication code required.", "warning")
+                    return render_template("login.html", title="Login", form=form)
+
+                totp = pyotp.TOTP(user.two_factor_secret)
+                if not totp.verify(code):
+                    flash("Invalid 2FA code. Try again.", "danger")
+                    return render_template("login.html", title="Login", form=form)
+
             login_user(user, remember=form.remember.data)
-            next_page = request.args.get("next")
-            return redirect(next_page) if next_page else redirect(url_for("home"))
-        else:
-            flash(
-                "Login Unsuccessful. Please enter correct email and password.", "danger"
-            )
+            flash("Logged in successfully!", "success")
+            return redirect(url_for("home"))
+
+        flash("Login unsuccessful. Check email and password.", "danger")
+
     return render_template("login.html", title="Login", form=form)
 
 
-# @app.route("/logout")
-# def logout():
-#     logout_user()
-#     flash("Logged out successfully!", "success")
-#     return redirect(url_for("home"))
+
 @app.route("/logout")
 def logout():
     if not current_user.is_authenticated:
         flash("You need to be logged in", "warning")
         return redirect(url_for("login"))
-
     logout_user()
     flash("You have been logged out", "success")
     return redirect(url_for("home"))
+
+# --- New Routes for Two-Factor Authentication ---
+
+@app.route("/two_factor_setup", methods=["GET", "POST"])
+@login_required
+def two_factor_setup():
+    """
+    Route for enabling or disabling two-factor authentication.
+    """
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "enable":
+            # Generate a new secret if it doesn't exist
+            if not current_user.two_factor_secret:
+                current_user.generate_otp_secret()
+            current_user.two_factor_enabled = True
+            db.session.commit()
+            # Generate TOTP URI and create a QR code image.
+            totp_uri = current_user.get_totp_uri()
+            qr = qrcode.make(totp_uri)
+            buf = BytesIO()
+            qr.save(buf, format="PNG")
+            qr_b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+            return render_template("two_factor_setup.html", enabled=True, qr_code=qr_b64)
+        elif action == "disable":
+            current_user.two_factor_enabled = False
+            db.session.commit()
+            flash("Two-factor authentication disabled.")
+            return redirect(url_for("account"))
+    # On GET, render the setup page with the current 2FA status.
+    return render_template("two_factor_setup.html", enabled=current_user.two_factor_enabled)
+
+
+@app.route("/toggle_2fa", methods=["POST"])
+@login_required
+def toggle_2fa():
+    action = request.form.get("action")
+    qr_code = None
+
+    if action == "enable":
+        if not current_user.two_factor_secret:
+            current_user.generate_otp_secret()
+        current_user.two_factor_enabled = True
+        db.session.commit()
+
+        # Generate QR code to show in account.html
+        totp_uri = current_user.get_totp_uri()
+        qr = qrcode.make(totp_uri)
+        buf = BytesIO()
+        qr.save(buf, format="PNG")
+        qr_code = base64.b64encode(buf.getvalue()).decode("ascii")
+
+        flash("Two-factor authentication has been enabled. Scan the QR code below.", "success")
+        return render_template("account.html", qr_code=qr_code, resume_path=current_user.resume_path)
+
+    elif action == "disable":
+        current_user.two_factor_enabled = False
+        db.session.commit()
+        flash("Two-factor authentication has been disabled.", "warning")
+        return redirect(url_for("account"))
+
+    flash("Invalid action.", "danger")
+    return redirect(url_for("account"))
+
+
+
+@app.route("/two_factor_verify", methods=["GET", "POST"])
+def two_factor_verify():
+    if "pre_2fa_user_id" not in session:
+        flash("No login session found. Please log in again.", "warning")
+        return redirect(url_for("login"))
+
+    user = User.query.get(session["pre_2fa_user_id"])
+
+    if request.method == "POST":
+        token = request.form.get("token")
+        totp = pyotp.TOTP(user.two_factor_secret)
+        if totp.verify(token):
+            # Complete login now
+            login_user(user)
+            session["2fa_verified"] = True
+            session.pop("pre_2fa_user_id", None)
+            flash("Two-factor authentication successful.", "success")
+            return redirect(url_for("getVacantJobs")) 
+        else:
+            flash("Invalid authentication code. Please try again.", "danger")
+
+    return render_template("two_factor_verify.html")
+
+
+# --- End of Two-Factor Authentication Routes ---
 
 
 @app.route("/review/all")
