@@ -31,7 +31,7 @@ Follow the steps below to set up the Campus Job Review System. You can choose to
 ### Docker Project Setup
 1. **Clone the Project:**
    ```bash
-   git clone https://github.com/SEFall24-Team61/campus-job-review-system.git
+   git clone https://github.com/DillonMichels/campus-job-review-system.git
    ```
 2. **Navigate to the Project Directory:**
    ```bash
@@ -88,7 +88,7 @@ Follow the steps below to set up the Campus Job Review System. You can choose to
 
 1. **Clone the Project:**
    ```bash
-   git clone https://github.com/SEFall24-Team61/campus-job-review-system.git
+   git clone https://github.com/DillonMichels/campus-job-review-system.git
    ```
 2. **Navigate to the Project Directory:**
    ```bash
