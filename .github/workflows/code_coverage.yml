@@ -23,8 +23,11 @@ jobs:
       - name: Update apt and install dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y \
-          curl \
-          ca-certificates
+            curl \
+            ca-certificates \
+            libjpeg-dev \
+            zlib1g-dev \
+            libpng-dev
 
       - name: Install Ollama
         run: |
@@ -34,10 +37,10 @@ jobs:
         run: |
           ollama run deepseek-r1:1.5b
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
-          pip install --upgrade pip && pip install -r requirements.txt
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
+          pip install -r requirements.txt
           pip install pytest coverage
 
       - name: Run tests with coverage
