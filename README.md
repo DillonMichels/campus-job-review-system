@@ -135,10 +135,11 @@ The rules listed below are to be followed by the ones who will be contributing t
 
 ## 🌐 Future Scope
 We’re excited about the enhancements coming to the NCSU Campus Jobs Review System! Here’s what’s on the horizon:
-- Genearate email notifications when a decision is made on  a student's application, when a relevant job opportunity is posted, or for the manager when a student applies to his or her listing
-- Enable two-factor authentication to strengthen the security of the application
-- Anonymous review setting to encourage more honest feedback
-- Output a percentage match for the current posting based on the applicant's parsed resume
+
+- Use the LLM have it output an updated resume for the user to download
+- Add Schedule meeting 
+- Email users about when their meetings are coming up and allow for rescheduling
+- Create templates to allow users to add their information and generate Cover Letters
 
 
 ## 🙌 Contributors
