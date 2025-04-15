@@ -144,14 +144,14 @@ We’re excited about the enhancements coming to the NCSU Campus Jobs Review Sys
 ## 🙌 Contributors
 A heartfelt thank you to our contributors who made this project possible:
 
-- [Srinivas Vasudevan](svasude7@ncsu.edu)
-- [Jill Marley](jahmad5@ncsu.edu)
-- [Saamyar Alizadeh](salizade@ncsu.edu)
+- [Mohsen EsfandyariDoulabi](mesfand@ncsu.edu)
+- [Ali Farahat](mfaraha3@ncsu.edu)
+- [Dillon Michels](cdmichel@ncsu.edu)
 
 "Our website and documentation clearly state the copyright owners of the software and its associated materials."
 
 ## 🙏 Acknowledgements
-We would like to thank Professor Dr. Timothy Menzies for helping us understand the process of building a good Software Engineering project. We would also like to thank the teaching assistants for their support throughout the project.
+We would like to thank Dr. Timothy Menzies for helping us understand the process of building a good Software Engineering project. We would also like to thank the teaching assistants for their support throughout the project.
 
 
 ## 💡 Feedback
@@ -159,7 +159,7 @@ We love hearing from you! Please open an issue or submit a pull request if you h
 
 
 ## 🙏 Special Thanks to Previous Contributors
-We extend our gratitude to the [previous contributors](https://github.com/SEFall24-Team61/campus-job-review-system) who helped lay the foundation for this project. Their contributions have been instrumental in making the NCSU Campus Job Review System what it is today!
+We extend our gratitude to the [previous contributors](https://github.com/jillahmad17/campus-job-review-system) who helped lay the foundation for this project. Their contributions have been instrumental in making the NCSU Campus Job Review System what it is today!
 
 
 ## ⭐ Governance
@@ -167,10 +167,10 @@ Please don't push any changes without permission of the contributors. Email for 
 
 ## 👀 For our users
 - We currently have 4 projects and 10 users associated with our project.
-- For help, please contact (svasude7@ncsu.edu), (jahmad5@ncsu.edu), or (salizade@ncsu.edu); we will get back to you within 5 to 7 business days. 
+- For help, please contact (cdmichel@ncsu.edu), (mfaraha3@ncsu.edu), or (mesfand@ncsu.edu); we will get back to you within 5 to 7 business days. 
 
 ## ⚠️ Disclaimer
 The NCSU Campus Job Review System dynamically retrieves job vacancies from the official [NC State Campus Enterprises website](https://campusenterprises.ncsu.edu/dept/hr/opportunities/student/jobs/). We do not own or manage this data; instead, our system serves as an interface to make job listings more accessible to NC State students by aggregating real-time job opportunities for convenient browsing. All job data is the property of NC State University Campus Enterprises, and any changes or updates to job listings on their website will be reflected here accordingly.
 
 ## 📘 Recommended Citation
-Marley, J., Vasudevan, S., & Alizadeh, S. (2025). Campus Job Review System [Computer software]. Retrieved from https://github.com/jillahmad17/campus-job-review-system
+EsfandyariDoulabi, M., Farahat, A., & Michels, D. (2025). Campus Job Review System [Computer software]. Retrieved from https://github.com/DillonMichels/campus-job-review-system
