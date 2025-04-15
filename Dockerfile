@@ -18,6 +18,13 @@ RUN ollama --version
 # Copy the requirements file into the container at /app
 COPY requirements.txt /app/requirements.txt
 
+
+
+# Install system packages needed for Pillow
+RUN apt-get update && apt-get install -y \
+    libjpeg-dev zlib1g-dev libpng-dev gcc \
+    && rm -rf /var/lib/apt/lists/*
+    
 # Install dependencies
 RUN pip install --upgrade pip && pip install -r requirements.txt
 RUN pip install --upgrade ollama  # Explicitly upgrade ollama
