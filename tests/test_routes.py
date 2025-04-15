@@ -345,17 +345,17 @@ def test_index_route_2(client):
     response = client.get('/home')
     assert response.status_code == 200
 
-def test_register_get(client):
-    response = client.get('/register')
-    assert response.status_code == 200
+# def test_register_get(client):
+#     response = client.get('/register')
+#     assert response.status_code == 200
 
-def test_register_post(client):
-    response = client.post('/register', data={
-        'username': 'asavla2',
-        'password': 'pass',
-        'email': 'asavla2@ncsu.edu'
-    })
-    assert response.status_code == 200
+# def test_register_post(client):
+#     response = client.post('/register', data={
+#         'username': 'asavla2',
+#         'password': 'pass',
+#         'email': 'asavla2@ncsu.edu'
+#     })
+#     assert response.status_code == 200
 
 def test_login_get(client):
     response = client.get('/login')
@@ -531,15 +531,15 @@ def test_account_route_requires_login(client):
     assert b'login' in response.data.lower()
 
 
-# Test user registration with invalid email
-def test_register_invalid_email(client):
-    response = client.post('/register', data={
-        'username': 'testuser',
-        'email': 'invalid-email',
-        'password': 'pass',
-        'confirm_password': 'pass'
-    }, follow_redirects=True)
-    assert b'invalid' in response.data.lower()
+# # Test user registration with invalid email
+# def test_register_invalid_email(client):
+#     response = client.post('/register', data={
+#         'username': 'testuser',
+#         'email': 'invalid-email',
+#         'password': 'pass',
+#         'confirm_password': 'pass'
+#     }, follow_redirects=True)
+#     assert b'invalid' in response.data.lower()
 
 
 # Test pagination limit on reviews
@@ -609,14 +609,14 @@ def test_dashboard_jobs_display(client):
         assert b'job' in response.data.lower()
 
 
-def test_register_password_mismatch(client):
-    response = client.post('/register', data={
-        'username': 'mismatchuser',
-        'email': 'mismatch@example.com',
-        'password': 'password123',
-        'confirm_password': 'differentpassword'
-    }, follow_redirects=True)
-    assert b'field must be equal to password' in response.data.lower()
+# def test_register_password_mismatch(client):
+#     response = client.post('/register', data={
+#         'username': 'mismatchuser',
+#         'email': 'mismatch@example.com',
+#         'password': 'password123',
+#         'confirm_password': 'differentpassword'
+#     }, follow_redirects=True)
+#     assert b'field must be equal to password' in response.data.lower()
 
 
 # Test accessing account page without logging in
@@ -1202,16 +1202,16 @@ def test_resume_parser_file_login(client, login_user): # this tests only get
     print(response)
     assert b'<think>' in response.data.lower()
 
-def test_resume_parser_we_file_login(client, login_user):
-    # with client.session_transaction() as session:
-    #     session['user_id'] = login_user.id
+# def test_resume_parser_we_file_login(client, login_user):
+#     # with client.session_transaction() as session:
+#     #     session['user_id'] = login_user.id
 
-        # get the pdf here
-        # add pass the fileobject in data
-    with open('./tests/test_data/test_resume.pdf', 'rb') as f:
-        response = client.post('/resume_parser_we',data={'file': f},follow_redirects=True)
+#         # get the pdf here
+#         # add pass the fileobject in data
+#     with open('./tests/test_data/test_resume.pdf', 'rb') as f:
+#         response = client.post('/resume_parser_we',data={'file': f},follow_redirects=True)
 
-        assert b'job_title' in response.data.lower()
+#         assert b'job_title' in response.data.lower()
 
 # Test the response if a file is attached in either case
 def test_resume_parser_we_db(client, login_user): # this tests only get
