@@ -1,62 +1,104 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="container mt-4">
-    <h1 class="mb-4">Welcome, {{ current_user.username }}!</h1>
+<div class="container mt-5" style="max-width: 900px;">
+    <h2 class="mb-4 text-center text-white">Welcome, {{ current_user.username }}!</h2>
 
-    <!-- User Info -->
-    <div>
-        <h3>User Details</h3>
-        <p><strong>Username:</strong> {{ current_user.username }}</p>
-        <p><strong>Email:</strong> {{ current_user.email }}</p>
-        <p><strong>Role:</strong> 
-            {% if current_user.is_recruiter %}
-                Recruiter
-            {% else %}
-                Job Seeker
-            {% endif %}
-        </p>
-    </div>
+    <!-- User Info Section -->
+    <div class="card mb-4 shadow" style="background-color: #ffffff; border-radius: 8px;">
+        <div class="card-header bg-dark text-white">
+            <strong>User Information</strong>
+        </div>
+        <div class="card-body text-dark">
+            <p><strong>Username:</strong> {{ current_user.username }}</p>
+            <p><strong>Email:</strong> {{ current_user.email }}</p>
+            <p><strong>Role:</strong> 
+                {% if current_user.is_recruiter %}
+                    Recruiter
+                {% else %}
+                    Job Seeker
+                {% endif %}
+            </p>
 
-    <p><strong>Upload your resume:</strong> 
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="resume">
-        <button type="submit">Upload Resume</button>
-    </form>
-    
-    {% if resume_path %}
-        <p></p>
-        <p><strong>Your resume:</strong> <a href="{{ url_for('serve_resume', path=resume_path.split('/')[-1]) }}" target="_blank">View Resume</a></p> 
-        <!-- <p>Generated URL: {{ url_for('serve_resume', path=resume_path.split('/')[-1]) }}</p>  -->
-        {% endif %}
+            <!-- Two-Factor Authentication -->
+            <hr>
+            <p><strong>Two-Factor Authentication:</strong> 
+                {% if current_user.two_factor_enabled %}
+                    <span class="badge bg-success">Enabled</span>
+                {% else %}
+                    <span class="badge bg-danger">Disabled</span>
+                {% endif %}
+            </p>
 
-    <div class="mt-4">
-        <h3>My Reviews</h3>
-        {% if current_user.reviews %}
-            {% for review in current_user.reviews %}
-                <div class="mb-3">
-                    <h4>{{ review.job_title }} ({{ review.department }})</h4>
-                    <p><strong>Location:</strong> {{ review.locations }}</p>
-                    <p><strong>Job Description:</strong> {{ review.job_description }}</p>
-                    <p><strong>Hourly Pay:</strong> {{ review.hourly_pay }}</p>
-                    <p><strong>Benefits:</strong> {{ review.benefits }}</p>
-                    <p><strong>Review:</strong> {{ review.review }}</p>
-                    <p><strong>Rating:</strong> {{ review.rating }}/5</p>
-                    <p><strong>Recommendation:</strong> 
-                        {% if review.recommendation %}
-                            Yes
-                        {% else %}
-                            No
-                        {% endif %}
-                    </p>
-                    <hr>
+            <form method="POST" action="{{ url_for('toggle_2fa') }}" class="mb-3">
+                {% if current_user.two_factor_enabled %}
+                    <button type="submit" name="action" value="disable" class="btn btn-outline-danger">Disable 2FA</button>
+                {% else %}
+                    <button type="submit" name="action" value="enable" class="btn btn-outline-success">Enable 2FA</button>
+                {% endif %}
+            </form>
+
+            {% if qr_code %}
+                <div class="border p-3 text-center bg-light rounded">
+                    <p><strong>Scan this QR code with your Google Authenticator app:</strong></p>
+                    <img src="data:image/png;base64,{{ qr_code }}" alt="2FA QR Code" class="img-fluid">
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>No reviews available.</p>
-        {% endif %}
+            {% endif %}
+        </div>
     </div>
 
+    <!-- Resume Upload Section -->
+    <div class="card mb-4 shadow" style="background-color: #ffffff; border-radius: 8px;">
+        <div class="card-header bg-dark text-white">
+            <strong>Resume Upload</strong>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <input type="file" name="resume" class="form-control">
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+
+            {% if resume_path %}
+                <p class="mt-3">
+                    <strong>Your resume:</strong>
+                    <a href="{{ url_for('serve_resume', path=resume_path.split('/')[-1]) }}" target="_blank" class="btn btn-outline-secondary btn-sm">View Resume</a>
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="card mb-5 shadow" style="background-color: #ffffff; border-radius: 8px;">
+        <div class="card-header bg-dark text-white">
+            <strong>My Reviews</strong>
+        </div>
+        <div class="card-body">
+            {% if current_user.reviews %}
+                {% for review in current_user.reviews %}
+                    <div class="mb-4 border-bottom pb-3">
+                        <h5 class="text-dark">{{ review.job_title }} ({{ review.department }})</h5>
+                        <p><strong>Location:</strong> {{ review.locations }}</p>
+                        <p><strong>Job Description:</strong> {{ review.job_description }}</p>
+                        <p><strong>Hourly Pay:</strong> {{ review.hourly_pay }}</p>
+                        <p><strong>Benefits:</strong> {{ review.benefits }}</p>
+                        <p><strong>Review:</strong> {{ review.review }}</p>
+                        <p><strong>Rating:</strong> {{ review.rating }}/5</p>
+                        <p><strong>Recommendation:</strong> 
+                            {% if review.recommendation %}
+                                Yes
+                            {% else %}
+                                No
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No reviews available.</p>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
 {% endblock content %}

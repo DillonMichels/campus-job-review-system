@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Two-Factor Authentication Setup</h2>
+  {% if enabled %}
+    <p>Your two-factor authentication is currently enabled.</p>
+    <form method="post">
+      <button type="submit" name="action" value="disable">Disable 2FA</button>
+    </form>
+    {% if qr_code %}
+      <p>Scan this QR code with your Google Authenticator app:</p>
+      <img src="data:image/png;base64,{{ qr_code }}" alt="2FA QR Code">
+    {% endif %}
+  {% else %}
+    <p>Two-factor authentication is not enabled.</p>
+    <form method="post">
+      <button type="submit" name="action" value="enable">Enable 2FA</button>
+    </form>
+  {% endif %}
+{% endblock %}

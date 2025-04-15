@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Two-Factor Authentication Verification</h2>
+  <p>Please enter the authentication code from your Google Authenticator app:</p>
+  <form method="post">
+    <input type="text" name="token" placeholder="Enter your code" required>
+    <button type="submit">Verify</button>
+  </form>
+{% endblock %}
