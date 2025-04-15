@@ -4,7 +4,7 @@
 <div class="banner2">
     <div class="col-md-8 offset-md-2">
         <div class="article-metadata">
-            <h3>Reviewer: {{ review.author.username }}</h3>
+          <h3>Reviewer: {{ 'Anonymous' if review.is_anonymous else review.author.username }}</h3>
         </div>
         <hr>
         <h3 class="article-title">{{ review.job_title }}</h3><br>
