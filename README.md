@@ -107,7 +107,7 @@ To set up the project locally, follow these steps.
 
 **Clone the Repository:**
 ```bash
-git clone https://github.com/DillonMichels/campus-job-review-system
+git clone https://github.com/DillonMichels/campus-job-review-system.git
 cd campus-job-review-system
 ```
 Choose Your Installation Method (with Docker or without Docker). Detailed instructions are available in [INSTALL.md](INSTALL.md).
