@@ -1,6 +1,6 @@
 from app import db, login_manager
 from flask_login import UserMixin
-
+import pyotp  # For OTP secret generation
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -38,9 +38,7 @@ class Vacancies(db.Model):
     jobPayRate = db.Column(db.String(120), index=True, nullable=False)
     maxHoursAllowed = db.Column(db.Integer, nullable=False)
 
-    def __init__(
-        self, jobTitle, jobDescription, jobLocation, jobPayRate, maxHoursAllowed
-    ):
+    def __init__(self, jobTitle, jobDescription, jobLocation, jobPayRate, maxHoursAllowed):
         self.jobTitle = jobTitle
         self.jobDescription = jobDescription
         self.jobLocation = jobLocation
@@ -60,11 +58,29 @@ class User(db.Model, UserMixin):
     image_file = db.Column(db.String(20), nullable=False, default="default.jpg")
     password = db.Column(db.String(60), nullable=False)
     is_recruiter = db.Column(db.Boolean, default=False)
-    ## updating the user to store the resume 2/22
-    resume_path = db.Column(db.String(255), nullable=True) 
+    resume_path = db.Column(db.String(255), nullable=True)
+
+    # New fields for two-factor authentication
+    two_factor_enabled = db.Column(db.Boolean, default=False)
+    two_factor_secret = db.Column(db.String(16))
 
     # Relationships
     reviews = db.relationship("Reviews", backref="author", lazy=True)
+
+    def generate_otp_secret(self):
+        """
+        Generates a new OTP secret using pyotp and assigns it to the user.
+        Returns the generated secret.
+        """
+        self.two_factor_secret = pyotp.random_base32()
+        return self.two_factor_secret
+
+    def get_totp_uri(self):
+        """
+        Generates a TOTP URI for use with Google Authenticator.
+        """
+        app_name = "CampusJobReview"  
+        return f'otpauth://totp/{app_name}:{self.username}?secret={self.two_factor_secret}&issuer={app_name}'
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
@@ -79,8 +95,7 @@ class JobApplication(db.Model):
     last_update_on = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    resume_path = db.Column(db.String(255), nullable=True)  # Store resume file path
-
+    resume_path = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f"<JobApplication {self.id} - {self.status}>"
@@ -108,13 +123,12 @@ class Recruiter_Postings(db.Model):
 
 class PostingApplications(db.Model):
     """Model which stores the information of all applications for each recruiter posting."""
-
+    
     __tablename__ = "posting_applications"
-
-    postingId = db.Column(db.Integer, db.ForeignKey("recruiter_postings.postingId"), primary_key=True)  # ForeignKey referencing Recruiter_Postings
-    recruiterId = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)  # ForeignKey referencing User (Recruiter)
-    applicantId = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)  # ForeignKey referencing User (Applicant)
-    shortlisted = db.Column(db.Boolean, default=False, nullable=False)  # Whether this applicant is shortlisted for this posting
+    postingId = db.Column(db.Integer, db.ForeignKey("recruiter_postings.postingId"), primary_key=True)
+    recruiterId = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    applicantId = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    shortlisted = db.Column(db.Boolean, default=False, nullable=False)
 
     # Relationships
     recruiter = db.relationship("User", foreign_keys=[recruiterId], backref="reviewed_applications")
@@ -133,13 +147,13 @@ class JobExperience(db.Model):
     """Model to store job experiences for users"""
 
     id = db.Column(db.Integer, primary_key=True)
-    job_title = db.Column(db.String(120), nullable=False)  # Job title for this experience
-    company_name = db.Column(db.String(120), nullable=False)  # Company name
-    location = db.Column(db.String(120), nullable=False)  # Location of the job
-    duration = db.Column(db.String(50), nullable=False)  # Duration of the job
-    description = db.Column(db.Text, nullable=False)  # Description of the job responsibilities
-    skills = db.Column(db.Text, nullable=True)  # Skills used or gained in this job
-    username = db.Column(db.String(20), db.ForeignKey("user.username"), nullable=False)  # User who added this experience
+    job_title = db.Column(db.String(120), nullable=False)
+    company_name = db.Column(db.String(120), nullable=False)
+    location = db.Column(db.String(120), nullable=False)
+    duration = db.Column(db.String(50), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    skills = db.Column(db.Text, nullable=True)
+    username = db.Column(db.String(20), db.ForeignKey("user.username"), nullable=False)
 
     def __repr__(self):
         return f"<JobExperience {self.job_title} at {self.company_name} | Skills: {self.skills}>"

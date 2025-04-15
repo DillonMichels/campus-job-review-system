@@ -1,57 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container-fluid banner2">
-    <!-- <div class="col-md-8 offset-md-2 info"> -->
-        <div class="content-section">
-            <form method="POST" action="">
-                {{ form.hidden_tag() }}
-                <fieldset class="form-group">
-                    <legend class="border-bottom mb-4">Log In</legend>
-                    <div class="form-group">
-                        {{ form.email.label(class="form-control-label") }}
-                        {% if form.email.errors %}
-                            {{ form.email(class="form-control form-control-lg is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.email(class="form-control form-control-lg") }}
-                        {% endif %}
-                    </div>
-                    <div class="form-group">
-                        {{ form.password.label(class="form-control-label") }}
-                        {% if form.password.errors %}
-                            {{ form.password(class="form-control form-control-lg is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    <span>{{ error }}</span>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.password(class="form-control form-control-lg") }}
-                        {% endif %}
-                    </div>
-                    <div class="form-check">
-                        {{ form.remember(class="form-check-input") }}
-                        {{ form.remember.label(class="form-check-label") }}
-                    </div>
-                </fieldset>
+    <div class="content-section">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Log In</legend>
+
+                <!-- Email -->
                 <div class="form-group">
-                    {{ form.submit(class="btn btn-outline-info") }}
+                    {{ form.email.label(class="form-control-label") }}
+                    {% if form.email.errors %}
+                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.email(class="form-control form-control-lg") }}
+                    {% endif %}
                 </div>
-                <small>
-                    <a href="#" class="form-a">Forgot Password?</a>
-                </small>
-            </form>
-        </div>
-        <div class="border-top pt-3">
-            <small class="text">
-                Need An Account? <a class="btn btn-outline-info" href="{{ url_for('register') }}">Sign Up Now</a>
-            </small>
-        </div>
-    <!-- </div> -->
+
+                <!-- Password -->
+                <div class="form-group">
+                    {{ form.password.label(class="form-control-label") }}
+                    {% if form.password.errors %}
+                        {{ form.password(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.password(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <!-- ✅ 2FA (Always Shown) -->
+                <div class="form-group">
+                    {{ form.two_factor_code.label(class="form-control-label") }}
+                    {% if form.two_factor_code.errors %}
+                        {{ form.two_factor_code(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.two_factor_code.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.two_factor_code(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <!-- Remember Me -->
+                <div class="form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
+                </div>
+            </fieldset>
+
+            <!-- Submit -->
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-info") }}
+            </div>
+
+            <small><a href="#" class="form-a">Forgot Password?</a></small>
+        </form>
+    </div>
+
+    <div class="border-top pt-3">
+        <small class="text">
+            Need An Account? <a class="btn btn-outline-info" href="{{ url_for('register') }}">Sign Up Now</a>
+        </small>
+    </div>
 </div>
-    
 {% endblock content %}
